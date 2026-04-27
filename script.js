@@ -18,14 +18,23 @@ document.querySelectorAll('.nav-menu a').forEach(link => {
 // Smooth scroll for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const hash = this.getAttribute('href');
+        if (!hash || hash === '#') {
+            return;
+        }
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(hash);
         if (target) {
             const offsetTop = target.offsetTop - 80;
             window.scrollTo({
                 top: offsetTop,
                 behavior: 'smooth'
             });
+
+            // Keep URL hash in sync with active section navigation.
+            if (window.location.hash !== hash) {
+                history.pushState(null, '', hash);
+            }
         }
     });
 });
