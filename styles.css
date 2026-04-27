@@ -6,26 +6,39 @@
 }
 
 :root {
-    --primary-color: #2563eb;
-    --primary-dark: #1e40af;
-    --secondary-color: #64748b;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --bg-alt: #f1f5f9;
-    --border-color: #e2e8f0;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --primary-color: #c8522a;
+    --primary-dark: #a84323;
+    --accent-color: #2a5ec8;
+    --secondary-color: #7a7570;
+    --text-primary: #0d0d0f;
+    --text-secondary: #5f5a54;
+    --bg-primary: #f7f5f0;
+    --bg-secondary: #ede9e1;
+    --bg-alt: #ece7df;
+    --surface: #ffffff;
+    --border-color: #d4cfc6;
+    --shadow: 0 2px 20px rgba(13, 13, 15, 0.07);
+    --shadow-lg: 0 10px 28px rgba(13, 13, 15, 0.12);
     --transition: all 0.3s ease;
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--bg-primary);
     overflow-x: hidden;
+    letter-spacing: 0.01em;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.25;
 }
 
 .container {
@@ -40,7 +53,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(247, 245, 240, 0.92);
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow);
     z-index: 1000;
@@ -54,8 +67,9 @@ body {
 }
 
 .nav-brand {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.45rem;
+    font-weight: 400;
     color: var(--primary-color);
 }
 
@@ -66,6 +80,10 @@ body {
 }
 
 .nav-menu a {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     text-decoration: none;
     color: var(--text-primary);
     font-weight: 500;
@@ -121,8 +139,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #111115 0%, #171a20 58%, #232937 100%);
+    color: var(--bg-primary);
     text-align: center;
     padding-top: 80px;
     position: relative;
@@ -137,7 +155,7 @@ body {
     right: 0;
     bottom: 0;
     background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
+    opacity: 0.16;
 }
 
 .hero-content {
@@ -147,21 +165,25 @@ body {
 }
 
 .hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2.8rem, 7vw, 4.2rem);
+    font-weight: 400;
     margin-bottom: 1rem;
     animation: fadeInUp 0.8s ease;
 }
 
 .hero-subtitle {
-    font-size: 1.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     margin-bottom: 0.5rem;
     opacity: 0.95;
     animation: fadeInUp 0.8s ease 0.2s both;
 }
 
 .hero-location {
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-bottom: 2rem;
     opacity: 0.9;
     animation: fadeInUp 0.8s ease 0.4s both;
@@ -179,7 +201,7 @@ body {
 .btn {
     display: inline-block;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: 3px;
     text-decoration: none;
     font-weight: 600;
     transition: var(--transition);
@@ -187,8 +209,9 @@ body {
 }
 
 .btn-primary {
-    background: white;
-    color: var(--primary-color);
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
 }
 
 .btn-primary:hover {
@@ -198,12 +221,12 @@ body {
 
 .btn-secondary {
     background: transparent;
-    color: white;
-    border-color: white;
+    color: var(--bg-primary);
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 .btn-secondary:hover {
-    background: white;
+    background: var(--bg-primary);
     color: var(--primary-color);
     transform: translateY(-2px);
 }
@@ -232,8 +255,9 @@ body {
 }
 
 .section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    font-weight: 400;
     margin-bottom: 3rem;
     text-align: center;
     color: var(--text-primary);
@@ -249,7 +273,7 @@ body {
     transform: translateX(-50%);
     width: 80px;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), #764ba2);
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
     border-radius: 2px;
 }
 
@@ -260,7 +284,7 @@ body {
 }
 
 .about-text {
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.8;
     color: var(--text-secondary);
     text-align: center;
@@ -274,12 +298,13 @@ body {
 }
 
 .experience-item {
-    background: white;
+    background: var(--surface);
     padding: 2rem;
     border-radius: 12px;
     box-shadow: var(--shadow);
     transition: var(--transition);
-    border-left: 4px solid var(--primary-color);
+    border-left: 3px solid var(--primary-color);
+    border: 1px solid var(--border-color);
 }
 
 .experience-item:hover {
@@ -301,7 +326,11 @@ body {
 .experience-company {
     display: block;
     font-size: 1.1rem;
-    color: var(--primary-color);
+    color: var(--accent-color);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
@@ -310,7 +339,13 @@ body {
     display: block;
     font-size: 0.9rem;
     color: var(--text-secondary);
-    font-style: italic;
+    font-family: 'DM Mono', monospace;
+    display: inline-block;
+    margin-top: 0.4rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
 }
 
 .experience-description {
@@ -333,7 +368,7 @@ body {
 }
 
 .experience-achievements li::before {
-    content: '▸';
+    content: '→';
     position: absolute;
     left: 0;
     color: var(--primary-color);
@@ -344,6 +379,29 @@ body {
     color: var(--text-primary);
 }
 
+.experience-highlights {
+    margin-top: 1.1rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.highlight-chip {
+    display: inline-block;
+    background: #111115;
+    color: #f7f5f0;
+    border: 1px solid #111115;
+    border-radius: 2px;
+    padding: 0.25rem 0.55rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.3;
+}
+
 /* Skills Section */
 .skills-grid {
     display: grid;
@@ -352,7 +410,8 @@ body {
 }
 
 .skill-category {
-    background: white;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
     padding: 2rem;
     border-radius: 12px;
     box-shadow: var(--shadow);
@@ -365,8 +424,11 @@ body {
 }
 
 .skill-category-title {
-    font-size: 1.3rem;
+    font-size: 1.05rem;
     font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--text-primary);
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
@@ -384,15 +446,17 @@ body {
     padding: 0.5rem 1rem;
     background: var(--bg-secondary);
     color: var(--text-primary);
-    border-radius: 20px;
-    font-size: 0.9rem;
+    border-radius: 2px;
+    font-size: 0.73rem;
     font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
     transition: var(--transition);
     border: 1px solid var(--border-color);
 }
 
 .skill-tag:hover {
-    background: var(--primary-color);
+    background: var(--accent-color);
     color: white;
     transform: translateY(-2px);
     box-shadow: var(--shadow);
@@ -406,11 +470,12 @@ body {
 }
 
 .cert-card {
-    background: white;
+    background: var(--surface);
     border-radius: 12px;
     box-shadow: var(--shadow);
     padding: 1.5rem;
-    border-top: 4px solid var(--primary-color);
+    border-top: 3px solid var(--primary-color);
+    border: 1px solid var(--border-color);
     transition: var(--transition);
 }
 
@@ -420,7 +485,10 @@ body {
 }
 
 .cert-card-title {
-    font-size: 1.15rem;
+    font-size: 0.92rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     font-weight: 700;
     color: var(--text-primary);
     margin-bottom: 1rem;
@@ -436,21 +504,25 @@ body {
 }
 
 .cert-pill {
-    background: var(--bg-secondary);
+    background: #f1eee8;
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 0.45rem 0.85rem;
-    font-size: 0.9rem;
+    border-radius: 2px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.76rem;
+    font-family: 'DM Mono', monospace;
     line-height: 1.4;
 }
 
 .cert-link {
     color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
     text-decoration: underline;
-    text-decoration-color: rgba(37, 99, 235, 0.45);
+    text-decoration-color: rgba(42, 94, 200, 0.45);
     text-underline-offset: 2px;
-    font-weight: 600;
+    text-decoration-thickness: 1px;
 }
 
 .cert-link:hover {
@@ -478,7 +550,8 @@ body {
 }
 
 .education-item {
-    background: white;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
     padding: 2rem;
     border-radius: 12px;
     box-shadow: var(--shadow);
@@ -492,15 +565,15 @@ body {
 }
 
 .education-degree {
-    font-size: 1.3rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .education-school {
-    font-size: 1.1rem;
-    color: var(--primary-color);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
@@ -536,7 +609,8 @@ body {
     justify-content: center;
     gap: 1rem;
     padding: 1rem 2rem;
-    background: white;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     text-decoration: none;
     color: var(--text-primary);
@@ -557,8 +631,11 @@ body {
 
 /* Footer */
 .footer {
-    background: var(--text-primary);
-    color: white;
+    background: #111115;
+    color: #b8b2a9;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
     text-align: center;
     padding: 2rem 0;
 }

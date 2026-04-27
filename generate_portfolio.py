@@ -21,6 +21,7 @@ SECTION_ALIASES = {
     "CERTIFICATIONS AND LEARNING": "certifications",
     "EDUCATION": "education",
 }
+DEFAULT_SITE_URL = "https://nitinkumar-patel.github.io/nitinkumar-portfolio/"
 
 
 def normalize_text(value):
@@ -366,10 +367,131 @@ def safe(value):
     return html.escape(value or "", quote=True)
 
 
+def json_ld_person(sections):
+    site_url = sections.get("site_url", DEFAULT_SITE_URL)
+    return (
+        '{\n'
+        '  "@context": "https://schema.org",\n'
+        '  "@type": "Person",\n'
+        f'  "name": "{safe(sections.get("name"))}",\n'
+        f'  "jobTitle": "{safe(sections.get("title"))}",\n'
+        f'  "url": "{safe(site_url)}",\n'
+        f'  "email": "{safe(sections.get("email"))}",\n'
+        f'  "telephone": "{safe(sections.get("phone"))}",\n'
+        '  "sameAs": [\n'
+        f'    "https://{safe(sections.get("linkedin"))}",\n'
+        f'    "https://{safe(sections.get("github"))}"\n'
+        "  ]\n"
+        "}"
+    )
+
+
+def upsert_seo_metadata(html_content, sections):
+    """Ensure core SEO metadata exists and is updated."""
+    site_url = sections.get("site_url", DEFAULT_SITE_URL)
+    title = f'{safe(sections["name"])} • {safe(sections["title"])}'
+    description = f'{safe(sections["title"])} - Portfolio of {safe(sections["name"])}'
+
+    replacements = [
+        (r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{description}">'),
+        (r'<meta name="robots" content="[^"]*">', '<meta name="robots" content="index, follow, max-image-preview:large">'),
+        (r'<link rel="canonical" href="[^"]*"\s*/?>', f'<link rel="canonical" href="{safe(site_url)}">'),
+        (r'<meta property="og:type" content="[^"]*">', '<meta property="og:type" content="website">'),
+        (r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{title}">'),
+        (r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{description}">'),
+        (r'<meta property="og:url" content="[^"]*">', f'<meta property="og:url" content="{safe(site_url)}">'),
+        (r'<meta property="og:site_name" content="[^"]*">', f'<meta property="og:site_name" content="{safe(sections["name"])}">'),
+        (r'<meta name="twitter:card" content="[^"]*">', '<meta name="twitter:card" content="summary_large_image">'),
+        (r'<meta name="twitter:title" content="[^"]*">', f'<meta name="twitter:title" content="{title}">'),
+        (r'<meta name="twitter:description" content="[^"]*">', f'<meta name="twitter:description" content="{description}">'),
+    ]
+
+    for pattern, replacement in replacements:
+        if re.search(pattern, html_content):
+            html_content = re.sub(pattern, replacement, html_content, count=1)
+        else:
+            html_content = re.sub(r"</head>", f"    {replacement}\n</head>", html_content, count=1)
+
+    jsonld_tag = f'<script type="application/ld+json">\n{json_ld_person(sections)}\n    </script>'
+    if re.search(r'<script type="application/ld\+json">.*?</script>', html_content, flags=re.DOTALL):
+        html_content = re.sub(
+            r'<script type="application/ld\+json">.*?</script>',
+            jsonld_tag,
+            html_content,
+            flags=re.DOTALL,
+            count=1,
+        )
+    else:
+        html_content = re.sub(r"</head>", f"    {jsonld_tag}\n</head>", html_content, count=1)
+
+    return html_content
+
+
+def extract_experience_highlights(job, max_items=10):
+    """Infer highlight chips for an experience entry from its text."""
+    source = " ".join(
+        [
+            job.get("role", ""),
+            job.get("company", ""),
+            " ".join(job.get("achievements", [])),
+        ]
+    ).lower()
+
+    keyword_map = [
+        (r"\blanggraph\b", "LangGraph"),
+        (r"\bcrewai\b", "CrewAI"),
+        (r"\blangchain\b", "LangChain"),
+        (r"\brag\b|retrieval-augmented generation", "RAG"),
+        (r"\bllama\b", "Llama"),
+        (r"\bopenai\b", "OpenAI"),
+        (r"\bhugging face\b", "Hugging Face"),
+        (r"\blangsmith\b", "LangSmith"),
+        (r"\bpython\b", "Python"),
+        (r"\bfastapi\b", "FastAPI"),
+        (r"\bdjango\b", "Django"),
+        (r"\bflask\b", "Flask"),
+        (r"\breact\b", "React"),
+        (r"\bnext\.js\b|\bnextjs\b", "Next.js"),
+        (r"\bvue(?:\.js)?\b", "Vue.js"),
+        (r"\bangular\b", "Angular"),
+        (r"\bpostgres(?:ql)?\b", "PostgreSQL"),
+        (r"\bredis\b", "Redis"),
+        (r"\bpgvector\b", "pgvector"),
+        (r"\bpinecone\b", "Pinecone"),
+        (r"\brabbitmq\b", "RabbitMQ"),
+        (r"\bkafka\b", "Kafka"),
+        (r"\baws\b|\blambda\b|\bec2\b|\bs3\b", "AWS"),
+        (r"\bterraform\b", "Terraform"),
+        (r"\bdocker\b", "Docker"),
+        (r"\bkubernetes\b", "Kubernetes"),
+        (r"\bci/cd\b|\bgithub actions\b", "CI/CD"),
+        (r"\bpytest\b", "Pytest"),
+    ]
+
+    chips = []
+    for pattern, label in keyword_map:
+        if re.search(pattern, source, re.IGNORECASE):
+            chips.append(label)
+        if len(chips) >= max_items:
+            break
+    return chips
+
+
 def render_experience_html(experience):
     items = []
     for job in experience:
         achievements = "\n".join(f'                        <li>{safe(item)}</li>' for item in job.get("achievements", []))
+        highlights = extract_experience_highlights(job)
+        highlight_html = ""
+        if highlights:
+            highlight_items = "\n".join(
+                f'                        <span class="highlight-chip">{safe(tag)}</span>' for tag in highlights
+            )
+            highlight_html = (
+                "\n                    <div class=\"experience-highlights\">\n"
+                f"{highlight_items}\n"
+                "                    </div>"
+            )
         item = (
             "                <div class=\"experience-item\">\n"
             "                    <div class=\"experience-header\">\n"
@@ -380,6 +502,7 @@ def render_experience_html(experience):
             "                    <ul class=\"experience-achievements\">\n"
             f"{achievements}\n"
             "                    </ul>\n"
+            f"{highlight_html}\n"
             "                </div>"
         )
         items.append(item)
@@ -480,12 +603,8 @@ def update_html_content(html_content, sections):
         html_content
     )
     
-    # Update meta description
-    html_content = re.sub(
-        r'<meta name="description" content="[^"]*">',
-        f'<meta name="description" content="{safe(sections["title"])} - Portfolio of {safe(sections["name"])}">',
-        html_content
-    )
+    # Update and enrich SEO metadata.
+    html_content = upsert_seo_metadata(html_content, sections)
     
     # Update hero subtitle
     html_content = re.sub(
@@ -617,11 +736,24 @@ def generate_html_template(sections):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{title} - Portfolio of {name}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="{site_url}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{name} • {title}">
+    <meta property="og:description" content="{title} - Portfolio of {name}">
+    <meta property="og:url" content="{site_url}">
+    <meta property="og:site_name" content="{name}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{name} • {title}">
+    <meta name="twitter:description" content="{title} - Portfolio of {name}">
     <title>{name} • {title}</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+{json_ld}
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -656,8 +788,8 @@ def generate_html_template(sections):
                 <p class="hero-location">{location}</p>
                 <div class="hero-links">
                     <a href="mailto:{email}" class="btn btn-primary">Email Me</a>
-                    <a href="https://www.{linkedin}" target="_blank" class="btn btn-secondary">LinkedIn</a>
-                    <a href="https://{github}" target="_blank" class="btn btn-secondary">GitHub</a>
+                    <a href="https://www.{linkedin}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">LinkedIn</a>
+                    <a href="https://{github}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">GitHub</a>
                 </div>
             </div>
         </div>
@@ -720,11 +852,11 @@ def generate_html_template(sections):
                         <span class="contact-icon">📞</span>
                         <span>{phone}</span>
                     </a>
-                    <a href="https://www.{linkedin}" target="_blank" class="contact-link">
+                    <a href="https://www.{linkedin}" target="_blank" rel="noopener noreferrer" class="contact-link">
                         <span class="contact-icon">💼</span>
                         <span>LinkedIn Profile</span>
                     </a>
-                    <a href="https://{github}" target="_blank" class="contact-link">
+                    <a href="https://{github}" target="_blank" rel="noopener noreferrer" class="contact-link">
                         <span class="contact-icon">💻</span>
                         <span>GitHub Profile</span>
                     </a>
@@ -761,8 +893,39 @@ def generate_html_template(sections):
         experience_html='<!-- Experience will be parsed from document -->',
         skills_html='<!-- Skills will be parsed from document -->',
         education_html='<!-- Education will be parsed from document -->',
+        site_url=sections.get("site_url", DEFAULT_SITE_URL),
+        json_ld=json_ld_person(sections),
         year=datetime.now().year
     )
+
+
+def write_seo_files(sections):
+    """Write robots.txt and sitemap.xml based on configured site URL."""
+    site_url = sections.get("site_url", DEFAULT_SITE_URL).rstrip("/") + "/"
+
+    robots_content = (
+        "User-agent: *\n"
+        "Allow: /\n\n"
+        f"Sitemap: {site_url}sitemap.xml\n"
+    )
+
+    sitemap_content = (
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+        "  <url>\n"
+        f"    <loc>{safe(site_url)}</loc>\n"
+        f"    <lastmod>{datetime.utcnow().strftime('%Y-%m-%d')}</lastmod>\n"
+        "    <changefreq>weekly</changefreq>\n"
+        "    <priority>1.0</priority>\n"
+        "  </url>\n"
+        "</urlset>\n"
+    )
+
+    with open("robots.txt", "w", encoding="utf-8") as robots_file:
+        robots_file.write(robots_content)
+
+    with open("sitemap.xml", "w", encoding="utf-8") as sitemap_file:
+        sitemap_file.write(sitemap_content)
 
 def main():
     """Main function to generate portfolio from Word document."""
@@ -793,6 +956,8 @@ def main():
     print(f"Writing to: {output_path}")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html)
+
+    write_seo_files(sections)
     
     print("✓ Portfolio updated successfully!")
     print("\nUpdated sections:")
@@ -806,6 +971,7 @@ def main():
         f"in_progress={len(certs.get('in_progress', []))}, projects={len(certs.get('projects', []))}"
     )
     print(f"  - Education entries: {len(sections.get('education', []))}")
+    print("  - SEO files: robots.txt, sitemap.xml")
 
 if __name__ == '__main__':
     main()
