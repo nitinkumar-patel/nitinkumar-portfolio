@@ -116,7 +116,7 @@ def detect_header_info(paragraphs):
         "phone": "+1 (484) 447-7008",
         "linkedin": "linkedin.com/in/nitinkumar-patel",
         "github": "github.com/nitinkumar-patel",
-        "title": "Staff AI Engineer",
+        "title": "Staff SW/AI/LLM Engineer",
     }
     if paragraphs:
         info["name"] = paragraphs[0]
@@ -349,7 +349,7 @@ def parse_resume_content(paragraph_entries):
     sections["education"] = parse_education(blocks.get("education", []))
 
     if sections.get("summary"):
-        title_match = re.search(r"(Staff AI Engineer|AI Solutions Architect|Engineering Lead)", sections["summary"], re.IGNORECASE)
+        title_match = re.search(r"(Staff SW/AI/LLM Engineer|AI Solutions Architect|Engineering Lead)", sections["summary"], re.IGNORECASE)
         if title_match:
             sections["title"] = title_match.group(0)
     return sections
